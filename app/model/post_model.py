@@ -1,4 +1,5 @@
 from datetime import datetime
+from signal import pause
 import pymongo
 from pymongo import ReturnDocument
 
@@ -32,6 +33,7 @@ class Posts:
     
     @staticmethod
     def update_post(post_id, payload):
+        payload["updated_at"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         return db.posts.find_one_and_update(
             {"id": post_id}, 
             {"$set": payload}, 

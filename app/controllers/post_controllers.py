@@ -1,3 +1,5 @@
+from http.client import BAD_REQUEST
+from click import BadArgumentUsage
 from flask import jsonify, request
 from app.model.post_model import Posts
 from http import HTTPStatus
@@ -17,8 +19,8 @@ def post_posts():
         post._id = str(post._id)
         post = post.__dict__
         del post['_id']
-        return jsonify(post), HTTPStatus.OK
-    except (AttributeError, TypeError):
+        return jsonify(post), HTTPStatus.CREATED
+    except (AttributeError, TypeError, KeyError):
         return {"error": "correct the values"}, HTTPStatus.BAD_REQUEST
 
 def remove_post(post_id):
@@ -40,10 +42,16 @@ def get_by_id_post(post_id):
 
 def update_post(post_id):
     data = request.get_json()
-    try:
+    tratament = list(data.keys())
+    try: 
+        for i in tratament:
+            if i != "content" and i != "author" and i!="tags" and i!="title":
+                raise KeyError
         post = Posts.update_post(post_id, data)
         post.update({"_id": str(post["_id"])})
         del post['_id']
         return jsonify(post), HTTPStatus.OK
+    except KeyError:
+        return {"error": "params invalid"}, HTTPStatus.BAD_REQUEST
     except:
         return {"error": "id Not Found"}, HTTPStatus.NOT_FOUND
